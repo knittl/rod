@@ -35,7 +35,7 @@ int main(int argc, char **argv) {
 	}
 
 	while (fgets(line, SIZE, stdin)) {
-		parse_line();
+		if (parse_line() <= 0) continue;
 
 		for (i = offsets[0]; i < offsets[1]; ++i) {
 			b = octetts[i >> 1 & 0x7];

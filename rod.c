@@ -8,6 +8,7 @@ static char line[SIZE];
 
 static unsigned int octetts[8] = { 0U };
 static unsigned int buffer[8] = { 0U };
+
 static int parse_line(void) {
 	offsets[0] = offsets[1];
 	memcpy(octetts, buffer, sizeof(octetts));
@@ -25,12 +26,21 @@ static int parse_line(void) {
 			buffer + 7);
 }
 
-int main(void) {
+int main(int argc, char **argv) {
+	char flip_endian = 0;
+	unsigned int b;
+	long unsigned int i;
+	if (argc > 1) {
+		flip_endian = strstr(argv[1], "--endian=big") == argv[1];
+	}
+
 	while (fgets(line, SIZE, stdin)) {
 		parse_line();
 
-		for (unsigned int i = offsets[0]; i < offsets[1]; ++i) {
-			putchar(octetts[i >> 1 & 0x7] >> ((i & 1) << 3));
+		for (i = offsets[0]; i < offsets[1]; ++i) {
+			b = octetts[i >> 1 & 0x7];
+			b = (b >> (flip_endian << 3)) | (b << (flip_endian << 3));
+			putchar(b >> ((i & 1) << 3));
 		}
 	}
 

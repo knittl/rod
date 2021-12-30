@@ -1,9 +1,11 @@
+#include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
 
-#define SIZE 65
+/* support offsets up to 07777777777777777777777 (>64 bit) */
+#define SIZE 96
 
-static unsigned long offsets[2] = { 0UL };
+static uint64_t offsets[2] = { 0UL };
 static char line[SIZE];
 
 static unsigned int octetts[8] = { 0U };
@@ -14,7 +16,7 @@ static int parse_line(void) {
 	memcpy(octetts, buffer, sizeof(octetts));
 	return sscanf(
 			line,
-			"%lo %6o %6o %6o %6o %6o %6o %6o %6o",
+			"%"SCNo64" %6o %6o %6o %6o %6o %6o %6o %6o",
 			offsets + 1,
 			buffer + 0,
 			buffer + 1,
@@ -29,7 +31,7 @@ static int parse_line(void) {
 int main(int argc, char **argv) {
 	char flip_endian = 0;
 	unsigned int b;
-	long unsigned int i;
+	uint64_t i;
 	if (argc > 1) {
 		flip_endian = strstr(argv[1], "--endian=big") == argv[1];
 	}
@@ -38,7 +40,7 @@ int main(int argc, char **argv) {
 		if (parse_line() <= 0) continue;
 
 		for (i = offsets[0]; i < offsets[1]; ++i) {
-			b = octetts[i >> 1 & 0x7];
+			b = octetts[(i >> 1) & 0x7];
 			b = (b >> (flip_endian << 3)) | (b << (flip_endian << 3));
 			putchar(b >> ((i & 1) << 3));
 		}

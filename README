@@ -1,0 +1,5 @@
+rod -- reverse od
+
+Reverses the output of "od" into its original binary form.
+This program only supports the default format of "od".
+

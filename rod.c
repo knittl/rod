@@ -10,6 +10,29 @@ static char line[SIZE];
 
 static unsigned int octetts[8] = { 0U };
 static unsigned int buffer[8] = { 0U };
+static char big_endian = 0;
+
+static char *read_line(void);
+static int parse_line(void);
+static void write_octetts(void);
+
+int main(int argc, char **argv) {
+	if (argc > 1) {
+		big_endian = strstr(argv[1], "--endian=big") == argv[1];
+	}
+
+	while (read_line()) {
+		if (parse_line() > 0) {
+			write_octetts();
+		}
+	}
+
+	return 0;
+}
+
+static char *read_line(void) {
+	return fgets(line, SIZE, stdin);
+}
 
 static int parse_line(void) {
 	offsets[0] = offsets[1];
@@ -28,23 +51,11 @@ static int parse_line(void) {
 			buffer + 7);
 }
 
-int main(int argc, char **argv) {
-	char flip_endian = 0;
-	unsigned int b;
+static void write_octetts(void) {
 	uint64_t i;
-	if (argc > 1) {
-		flip_endian = strstr(argv[1], "--endian=big") == argv[1];
+	for (i = offsets[0]; i < offsets[1]; ++i) {
+		unsigned int b = octetts[(i >> 1) & 0x7];
+		b = (b >> (big_endian << 3)) | (b << (big_endian << 3));
+		putchar(b >> ((i & 1) << 3));
 	}
-
-	while (fgets(line, SIZE, stdin)) {
-		if (parse_line() <= 0) continue;
-
-		for (i = offsets[0]; i < offsets[1]; ++i) {
-			b = octetts[(i >> 1) & 0x7];
-			b = (b >> (flip_endian << 3)) | (b << (flip_endian << 3));
-			putchar(b >> ((i & 1) << 3));
-		}
-	}
-
-	return 0;
 }

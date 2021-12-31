@@ -1,5 +1,6 @@
 #include <inttypes.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 /* support offsets up to 07777777777777777777777 (>64 bit) */
@@ -12,14 +13,16 @@ static unsigned int octetts[8] = { 0U };
 static unsigned int buffer[8] = { 0U };
 static char big_endian = 0;
 
+static void usage(void);
+static void parse_options(char **argv);
+
 static char *read_line(void);
 static int parse_line(void);
 static void write_octetts(void);
 
 int main(int argc, char **argv) {
-	if (argc > 1) {
-		big_endian = strstr(argv[1], "--endian=big") == argv[1];
-	}
+	(void)argc; /* unused */
+	parse_options(argv + 1);
 
 	while (read_line()) {
 		if (parse_line() > 0) {
@@ -28,6 +31,27 @@ int main(int argc, char **argv) {
 	}
 
 	return 0;
+}
+
+static void parse_options(char **argv) {
+	char *arg;
+	while ((arg = *argv++)) {
+		if (strstr(arg, "--help") == arg) {
+			usage();
+			exit(0);
+		} else if (strstr(arg, "--endian=big") == arg) {
+			big_endian = 1;
+		}
+	}
+}
+
+static void usage(void) {
+	printf(
+			"Usage: rod [--endian=big]\n"
+			"\n"
+			"Read \"od\" octal representation from standard input.\n"
+			"Reverse it into its original binary form and write to standard output.\n"
+			"This program only supports the default format of \"od\".\n");
 }
 
 static char *read_line(void) {

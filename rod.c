@@ -9,8 +9,8 @@
 static uint64_t offsets[2] = { 0UL };
 static char line[SIZE];
 
-static unsigned int octetts[8] = { 0U };
-static unsigned int buffer[8] = { 0U };
+static uint16_t octetts[8] = { 0U };
+static uint16_t buffer[8] = { 0U };
 static char big_endian = 0;
 
 static void usage(void);
@@ -63,7 +63,15 @@ static int parse_line(void) {
 	memcpy(octetts, buffer, sizeof(octetts));
 	return sscanf(
 			line,
-			"%"SCNo64" %6o %6o %6o %6o %6o %6o %6o %6o",
+			"%"SCNo64
+			" %6"SCNo16
+			" %6"SCNo16
+			" %6"SCNo16
+			" %6"SCNo16
+			" %6"SCNo16
+			" %6"SCNo16
+			" %6"SCNo16
+			" %6"SCNo16,
 			offsets + 1,
 			buffer + 0,
 			buffer + 1,
@@ -78,7 +86,7 @@ static int parse_line(void) {
 static void write_octetts(void) {
 	uint64_t i;
 	for (i = offsets[0]; i < offsets[1]; ++i) {
-		unsigned int b = octetts[(i >> 1) & 0x7];
+		uint16_t b = octetts[(i >> 1) & 0x7];
 		b = (b >> (big_endian << 3)) | (b << (big_endian << 3));
 		putchar(b >> ((i & 1) << 3));
 	}

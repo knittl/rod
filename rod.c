@@ -9,7 +9,7 @@
 static uint64_t offsets[2] = { 0UL };
 static char line[SIZE];
 
-static uint16_t octetts[8] = { 0U };
+static uint16_t octets[8] = { 0U };
 static uint16_t buffer[8] = { 0U };
 static char big_endian = 0;
 
@@ -18,7 +18,7 @@ static void parse_options(char **argv);
 
 static char *read_line(void);
 static int parse_line(void);
-static void write_octetts(void);
+static void write_octets(void);
 
 int main(int argc, char **argv) {
 	(void)argc; /* unused */
@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
 
 	while (read_line()) {
 		if (parse_line() > 0) {
-			write_octetts();
+			write_octets();
 		}
 	}
 
@@ -60,7 +60,7 @@ static char *read_line(void) {
 
 static int parse_line(void) {
 	offsets[0] = offsets[1];
-	memcpy(octetts, buffer, sizeof(octetts));
+	memcpy(octets, buffer, sizeof(octets));
 	return sscanf(
 			line,
 			"%"SCNo64
@@ -83,10 +83,10 @@ static int parse_line(void) {
 			buffer + 7);
 }
 
-static void write_octetts(void) {
+static void write_octets(void) {
 	uint64_t i;
 	for (i = offsets[0]; i < offsets[1]; ++i) {
-		uint16_t b = octetts[(i >> 1) & 0x7];
+		uint16_t b = octets[(i >> 1) & 0x7];
 		b = (b >> (big_endian << 3)) | (b << (big_endian << 3));
 		putchar(b >> ((i & 1) << 3));
 	}

@@ -10,8 +10,9 @@ static uint64_t curr_offset = 0UL;
 static uint64_t next_offset = 0UL;
 static char line[SIZE];
 
-static uint16_t octets[8] = { 0U };
-static uint16_t buffer[8] = { 0U };
+static uint16_t buf[16] = { 0U };
+static uint16_t *octets = buf;
+static uint16_t *buffer = buf + 8;
 static char big_endian = 0;
 
 static void usage(void);
@@ -20,6 +21,7 @@ static void parse_options(char **argv);
 static char *read_line(void);
 static int parse_line(void);
 static void write_octets(void);
+static void swap_buffers(void);
 
 int main(int argc, char **argv) {
 	(void)argc; /* unused */
@@ -28,6 +30,7 @@ int main(int argc, char **argv) {
 	while (read_line()) {
 		if (parse_line() > 0) {
 			write_octets();
+			swap_buffers();
 		}
 	}
 
@@ -61,7 +64,6 @@ static char *read_line(void) {
 
 static int parse_line(void) {
 	curr_offset = next_offset;
-	memcpy(octets, buffer, sizeof(octets));
 	return sscanf(
 			line,
 			"%"SCNo64
@@ -91,4 +93,11 @@ static void write_octets(void) {
 		b = (b >> (big_endian << 3)) | (b << (big_endian << 3));
 		putchar(b >> ((i & 1) << 3));
 	}
+}
+
+static void swap_buffers(void) {
+	uint16_t *tmp;
+	tmp = octets;
+	octets = buffer;
+	buffer = tmp;
 }

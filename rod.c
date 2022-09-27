@@ -13,7 +13,8 @@ static char line[SIZE];
 static uint16_t buf[16] = { 0U };
 static uint16_t *octets = buf;
 static uint16_t *buffer = buf + 8;
-static char big_endian = 0;
+
+static char endian_shift = 0;
 
 static void usage(void);
 static void parse_options(char **argv);
@@ -44,7 +45,7 @@ static void parse_options(char **argv) {
 			usage();
 			exit(0);
 		} else if (strstr(arg, "--endian=big") == arg) {
-			big_endian = 1;
+			endian_shift = 8;
 		}
 	}
 }
@@ -89,7 +90,7 @@ static void write_octets(void) {
 	uint64_t i;
 	for (i = offset_from; i < offset_to; ++i) {
 		uint16_t b = octets[(i >> 1) & 0x7];
-		b = (b >> (big_endian << 3)) | (b << (big_endian << 3));
+		b = (b >> endian_shift) | (b << endian_shift);
 		putchar(b >> ((i & 1) << 3));
 	}
 }

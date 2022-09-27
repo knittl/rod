@@ -3,3 +3,11 @@ rod -- reverse od
 Reverses the output of "od" into its original binary form.
 This program only supports the default format of "od".
 
+Example usage:
+
+    $ echo 'Hello rod!' | od > dump
+    $ cat dump
+    0000000 062510 066154 020157 067562 020544 000012
+    0000013
+    $ ./rod < dump
+    Hello rod!

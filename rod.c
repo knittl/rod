@@ -6,7 +6,8 @@
 /* support offsets up to 07777777777777777777777 (>64 bit) */
 #define SIZE 96
 
-static uint64_t offsets[2] = { 0UL };
+static uint64_t curr_offset = 0UL;
+static uint64_t next_offset = 0UL;
 static char line[SIZE];
 
 static uint16_t octets[8] = { 0U };
@@ -59,7 +60,7 @@ static char *read_line(void) {
 }
 
 static int parse_line(void) {
-	offsets[0] = offsets[1];
+	curr_offset = next_offset;
 	memcpy(octets, buffer, sizeof(octets));
 	return sscanf(
 			line,
@@ -72,7 +73,7 @@ static int parse_line(void) {
 			" %6"SCNo16
 			" %6"SCNo16
 			" %6"SCNo16,
-			offsets + 1,
+			&next_offset,
 			buffer + 0,
 			buffer + 1,
 			buffer + 2,
@@ -85,7 +86,7 @@ static int parse_line(void) {
 
 static void write_octets(void) {
 	uint64_t i;
-	for (i = offsets[0]; i < offsets[1]; ++i) {
+	for (i = curr_offset; i < next_offset; ++i) {
 		uint16_t b = octets[(i >> 1) & 0x7];
 		b = (b >> (big_endian << 3)) | (b << (big_endian << 3));
 		putchar(b >> ((i & 1) << 3));

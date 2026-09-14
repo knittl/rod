@@ -100,11 +100,22 @@ static uint16_t parse_word(char **str) {
 }
 
 static void write_octets(void) {
+	unsigned char block[16];
 	uint64_t i;
-	for (i = offset_from; i < offset_to; ++i) {
-		uint16_t b = octets[(i >> 1) & 0x7];
+
+	for (i = 0; i < 16; ++i) {
+		uint16_t b = octets[i >> 1];
 		b = (b >> endian_shift) | (b << endian_shift);
-		putchar(b >> ((i & 1) << 3));
+		block[i] = b >> ((i & 1) << 3);
+	}
+
+	while (offset_from + 16 < offset_to) {
+		fwrite(block, 1, 16, stdout);
+		offset_from += 16;
+	}
+
+	if (offset_from < offset_to) {
+		fwrite(block, 1, offset_to - offset_from, stdout);
 	}
 }
 

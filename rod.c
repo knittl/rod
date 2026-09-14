@@ -110,7 +110,7 @@ static void write_octets(void) {
 		output[i] = b >> ((i & 1) << 3);
 	}
 
-	while (offset_from + 16 <= offset_to) {
+	while (offset_to - offset_from >= 16) {
 		write_output(16);
 		offset_from += 16;
 	}

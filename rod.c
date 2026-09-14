@@ -41,10 +41,10 @@ int main(int argc, char **argv) {
 static void parse_options(char **argv) {
 	char *arg;
 	while ((arg = *argv++)) {
-		if (strstr(arg, "--help") == arg) {
+		if (strcmp(arg, "--help") == 0) {
 			usage();
 			exit(0);
-		} else if (strstr(arg, "--endian=big") == arg) {
+		} else if (strcmp(arg, "--endian=big") == 0) {
 			endian_shift = 8;
 		}
 	}

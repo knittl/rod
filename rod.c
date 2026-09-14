@@ -13,6 +13,7 @@ static char line[SIZE];
 static uint16_t buf[16] = { 0U };
 static uint16_t *octets = buf;
 static uint16_t *buffer = buf + 8;
+static unsigned char output[16] = { 0U };
 
 static char endian_shift = 0;
 
@@ -24,6 +25,7 @@ static int parse_line(void);
 static uint64_t parse_offset(char **str);
 static uint16_t parse_word(char **str);
 static void write_octets(void);
+static void write_output(size_t n);
 static void swap_buffers(void);
 
 int main(int argc, char **argv) {
@@ -100,23 +102,26 @@ static uint16_t parse_word(char **str) {
 }
 
 static void write_octets(void) {
-	unsigned char block[16];
 	uint64_t i;
 
 	for (i = 0; i < 16; ++i) {
 		uint16_t b = octets[i >> 1];
 		b = (b >> endian_shift) | (b << endian_shift);
-		block[i] = b >> ((i & 1) << 3);
+		output[i] = b >> ((i & 1) << 3);
 	}
 
-	while (offset_from + 16 < offset_to) {
-		fwrite(block, 1, 16, stdout);
+	while (offset_from + 16 <= offset_to) {
+		write_output(16);
 		offset_from += 16;
 	}
 
 	if (offset_from < offset_to) {
-		fwrite(block, 1, offset_to - offset_from, stdout);
+		write_output(offset_to - offset_from);
 	}
+}
+
+static void write_output(size_t n) {
+	fwrite(output, 1, n, stdout);
 }
 
 static void swap_buffers(void) {

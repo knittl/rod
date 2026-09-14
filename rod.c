@@ -21,7 +21,7 @@ static void parse_options(char **argv);
 
 static char *read_line(void);
 static int parse_line(void);
-static char *parse_octal(char *str, uint64_t *out);
+static uint64_t parse_octal(char **str);
 static void write_octets(void);
 static void swap_buffers(void);
 
@@ -66,27 +66,25 @@ static char *read_line(void) {
 
 static int parse_line(void) {
 	uint8_t i;
-	uint64_t w;
 	char *p = line;
 	if (*p == '*') return 0;
-	p = parse_octal(p, &offset_to);
-	++p;
+	offset_to = parse_octal(&p);
+	++p; /* skip space */
 	for (i = 0; i < 8; ++i) {
-		p = parse_octal(p, &w);
-		buffer[i] = w;
-		++p;
+		buffer[i] = parse_octal(&p);
+		++p; /* skip space */
 	}
 	return 1;
 }
 
-static char *parse_octal(char *str, uint64_t *out) {
+static uint64_t parse_octal(char **str) {
 	uint64_t value = 0;
-	while (*str >= '0' && *str <= '7') {
-		value = value * 8 + (*str - '0');
-		++str;
+	char *p;
+	for (p = *str; *p >= '0' && *p <= '7'; ++p) {
+		value = value * 8 + (*p - '0');
 	}
-	*out = value;
-	return str;
+	*str = p;
+	return value;
 }
 
 static void write_octets(void) {

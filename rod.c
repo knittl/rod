@@ -88,7 +88,7 @@ static uint64_t parse_offset(char **str) {
 
 static uint16_t parse_word(char **str) {
 	char *p = *str;
-	uint64_t value
+	uint16_t value
 		= ((p[0] - '0') << 15)
 		| ((p[1] - '0') << 12)
 		| ((p[2] - '0') << 9)

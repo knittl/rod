@@ -21,6 +21,7 @@ static void parse_options(char **argv);
 
 static char *read_line(void);
 static int parse_line(void);
+static char *parse_octal(char *str, uint64_t *out);
 static void write_octets(void);
 static void swap_buffers(void);
 
@@ -64,26 +65,28 @@ static char *read_line(void) {
 }
 
 static int parse_line(void) {
-	return sscanf(
-			line,
-			"%"SCNo64
-			" %6"SCNo16
-			" %6"SCNo16
-			" %6"SCNo16
-			" %6"SCNo16
-			" %6"SCNo16
-			" %6"SCNo16
-			" %6"SCNo16
-			" %6"SCNo16,
-			&offset_to,
-			buffer + 0,
-			buffer + 1,
-			buffer + 2,
-			buffer + 3,
-			buffer + 4,
-			buffer + 5,
-			buffer + 6,
-			buffer + 7);
+	uint8_t i;
+	uint64_t w;
+	char *p = line;
+	if (*p == '*') return 0;
+	p = parse_octal(p, &offset_to);
+	++p;
+	for (i = 0; i < 8; ++i) {
+		p = parse_octal(p, &w);
+		buffer[i] = w;
+		++p;
+	}
+	return 1;
+}
+
+static char *parse_octal(char *str, uint64_t *out) {
+	uint64_t value = 0;
+	while (*str >= '0' && *str <= '7') {
+		value = value * 8 + (*str - '0');
+		++str;
+	}
+	*out = value;
+	return str;
 }
 
 static void write_octets(void) {

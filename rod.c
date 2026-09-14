@@ -80,7 +80,7 @@ static uint64_t parse_offset(char **str) {
 	uint64_t value = 0;
 	char *p;
 	for (p = *str; *p >= '0' && *p <= '7'; ++p) {
-		value = value * 8 + (*p - '0');
+		value = (value << 3) + (*p - '0');
 	}
 	*str = p + 1;
 	return value;

@@ -12,10 +12,28 @@ failures=0
 
 _test() {
 	tests=$((tests+1))
-	input="$1"
+
+	case "$1" in
+		--hex)
+			shift
+			unhex() { xxd -r -p; }
+			input="$1"
+			;;
+		--sh)
+			shift
+			unhex() { xxd -r -p; }
+			input=$(sh -c "$1" | xxd -p)
+			;;
+		*)
+			unhex() { cat; }
+			input="$1"
+			;;
+	esac
+
 	desc="${2:-"$1"}"
-	actual="$(printf '%s' "$input" | od ${endianness:+"--endian=$endianness"} | ./rod ${endianness:+"--endian=$endianness"} | xxd -p)"
-	expected="$(printf '%s' "$input" | xxd -p)"
+	actual="$(printf '%s' "$input" | unhex | od ${endianness:+"--endian=$endianness"} | ./rod ${endianness:+"--endian=$endianness"} | xxd -p)"
+	expected="$(printf '%s' "$input" | unhex | xxd -p)"
+
 	if test "$actual" = "$expected"; then
 		printf 'OK   %s\n' "$desc"
 	else
@@ -39,10 +57,10 @@ for endianness in '' big little; do
 	_test '0123456789abcdef0123456789abcdef' 'repeated'
 	_test '0123456789abcdef0123456789abcdefxxxxxxxxxxxxxxxxfedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210//' 'repeated, normal, repeated'
 
-	_test "$(printf 000102030400 | xxd -r -p)" 'binary'
-	_test "$(printf 000000000000 | xxd -r -p)" 'nul bytes'
+	_test --hex "000102030400" 'binary'
+	_test --hex "000000000000" 'nul bytes'
 
-	_test "$(head -c100 /dev/urandom | base64)" 'base64'
-	_test "$(dd if=/dev/urandom bs=1M count=17)" 'large offsets'
-	_test "$(dd if=/dev/zero bs=1M count=17)" 'large repeat'
+	_test --sh 'head -c100 /dev/urandom | base64' 'base64'
+	_test --sh 'dd if=/dev/urandom bs=1M count=17' 'large offsets'
+	_test --sh 'dd if=/dev/zero bs=1M count=17' 'large repeat'
 done
